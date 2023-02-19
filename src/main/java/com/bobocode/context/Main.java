@@ -10,7 +10,7 @@ public class Main {
 
         var context = new ApplicationContextImpl("com.bobocode.context");
 
-        var bean = context.getBean(PrintService.class);
-        bean.printHello();
+        var bean = context.getBean(InjectionDemoService.class);
+        bean.sayHelloFromDependency();
     }
 }

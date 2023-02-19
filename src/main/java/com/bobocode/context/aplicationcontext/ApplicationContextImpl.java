@@ -1,11 +1,13 @@
 package com.bobocode.context.aplicationcontext;
 
 import com.bobocode.context.annotation.Bean;
+import com.bobocode.context.annotation.Inject;
 import com.bobocode.context.exception.NoSuchBeanException;
 import com.bobocode.context.exception.NoUniqueBeanException;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +25,24 @@ public class ApplicationContextImpl implements ApplicationContext {
             String beanName = resolveBeanName(annotatedType);
             Constructor<?> constructor = annotatedType.getConstructor();
             var bean = constructor.newInstance();
+
+            injectDependencies(bean);
+
             context.put(beanName, bean);
         }
+
     }
+
+    private void injectDependencies(Object bean) throws IllegalAccessException {
+        Field[] fields = bean.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                field.setAccessible(true);
+                field.set(bean, getBean(field.getType()));
+            }
+        }
+    }
+
 
     public <T> T getBean(Class<T> beanType) {
         Map<String, T> matchingBeans = getAllBeans(beanType);
